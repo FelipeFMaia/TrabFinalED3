@@ -66,7 +66,7 @@ void func12() {
         int imprimiuAlgum = 0;  // flag pra saber quando pular linha
         
         while (a != NULL) {
-            // CORREÇÃO DO GRAU AMIZADE AQUI
+            
             printf("%s, %s, %s, ", 
                    v->nomeUsuario, 
                    a->nomeDestino, 

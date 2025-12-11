@@ -68,12 +68,12 @@ void func11() {
         int imprimiuAlgum = 0; // flag pra saber quando pular linha
         
         while (a != NULL) {
-            // CORREÇÃO DO GRAU AMIZADE AQUI
+            
             printf("%s, %s, %s, ", 
                    v->nomeUsuario, 
                    a->nomeDestino, 
                    a->dataInicio);
-                   
+
             // Tratamento especial para o char de data final
             if (a->dataFim[0] == '$') {
                 printf("NULO, ");
