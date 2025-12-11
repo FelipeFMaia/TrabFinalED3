@@ -17,10 +17,7 @@ void func11() {
     FILE *fpPessoa = fopen(nameFilePessoa, "rb");
     FILE *fpSegue = fopen(nameFileSegue, "rb");
 
-    if (verificaArquivo(fpPessoa) == 0) {
-        fclose(fpIndice);
-        return; // Aborta funcionalidade
-    }
+    if (verificaArquivo(fpPessoa) == 0) return;
     
     // Abrir índice apenas para validar existência (conforme padrão dos trabalhos anteriores)
     FILE *fpIndice = fopen(nameFileIndice, "rb");
