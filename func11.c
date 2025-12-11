@@ -5,7 +5,7 @@
 #include "utilidades.h"
 
 /**
- * Funcionalidade 11: Criação e Exibição do Grafo
+ * Funcionalidade 11: Criação e Exibição do Grafo de quem segue quem
  */
 void func11() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
@@ -94,7 +94,7 @@ void func11() {
              // ATENÇÃO: O gabarito mostra uma linha em branco separando blocos.
              // ACONCEICAO...
              // <linha em branco>
-             // ALANAVIEIRA...
+             // ALANAVIEIRA.../* integrantes: Bruno Baremaker Moraes (15443854) */
              printf("\n");
         }
     }
