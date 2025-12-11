@@ -3,6 +3,7 @@
 #include <string.h>
 #include "func.h"
 #include "utilidades.h"
+#include "grafos.h"
 
 /**
  * Funcionalidade 13: Caminho mais curto (BFS no Grafo Transposto)

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "func.h"
 #include "utilidades.h"
+#include "grafos.h"
 
 /**
  * Funcionalidade 14: Determinar o comprimento do ciclo (Fofoca)

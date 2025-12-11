@@ -3,6 +3,7 @@
 #include <string.h>
 #include "func.h"
 #include "utilidades.h"
+#include "grafos.h"
 
 /**
  * Funcionalidade 11: Criação e Exibição do Grafo de quem segue quem
@@ -14,48 +15,52 @@ void func11() {
 
     scanf(" %s %s %s", nameFilePessoa, nameFileIndice, nameFileSegue);
 
+    // tenta abrir os arquivos de parametro binarios para leitura
     FILE *fpPessoa = fopen(nameFilePessoa, "rb");
     FILE *fpSegue = fopen(nameFileSegue, "rb");
-
-    if (verificaArquivo(fpPessoa) == 0) return;
-    
-    // Abrir índice apenas para validar existência (conforme padrão dos trabalhos anteriores)
     FILE *fpIndice = fopen(nameFileIndice, "rb");
+
+    // Verificação de segurança
+    if (verificaArquivo(fpPessoa) == 0){
+        return; // aborta funcionalidade
+    }
+    
     if (verificaArquivo(fpIndice) == 0) {
         fclose(fpPessoa);
-        return;
+        return; // aborta funcionalidade
     }
     fclose(fpIndice); 
 
     if (verificaArquivo(fpSegue) == 0) {
         fclose(fpPessoa);
-        return;
+        fclose(fpIndice);
+        return; // aborta funcionalidade
     }
 
     CabecalhoPessoa headerPessoa;
     lerCabecalhoPessoa(fpPessoa, &headerPessoa);
-    if (headerPessoa.status == '0') {
+    if (headerPessoa.status == '0') {   //caso o arquivo pessoa esteja inconsistente, aborta funcionalidade
          printf("Falha na execução da funcionalidade.\n");
-         fclose(fpPessoa); fclose(fpSegue); return;
+         fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // Criar grafo
+    // criar grafo
     Grafo *grafo = criarGrafo(headerPessoa.qtdPessoas);
     
-    // 1. Carregar vértices
-    carregarVerticesDoArquivo(fpPessoa, grafo);
+    // carregar vértices
+    carregarVerticesDoArquivo(fpPessoa, grafo); // vertices são as pessoas do arquivo pessoas
 
     CabecalhoSegue headerSegue;
     lerCabecalhoSegue(fpSegue, &headerSegue);
-    if (headerSegue.status == '0') {
+    if (headerSegue.status == '0') {    //caso o arquivo segue esteja inconsistente, aborta funcionalidade
          printf("Falha na execução da funcionalidade.\n");
-         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); return;
+         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // 2. Carregar arestas (modo normal = 0)
-    carregarArestasDoArquivo(fpSegue, grafo, 0);
+    // carregar arestas (modo normal = 0)
+    carregarArestasDoArquivo(fpSegue, grafo, 0);    // arestas são as relações de quem segue quem
 
-    // 3. Exibir
+    // exibir o grafo de lista de adjacências
     for (int i = 0; i < grafo->numVertices; i++) {
         Vertice *v = &grafo->listaVertices[i];
         Aresta *a = v->inicioLista;
