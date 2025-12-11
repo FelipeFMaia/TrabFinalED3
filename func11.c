@@ -73,7 +73,8 @@ void func11() {
                    v->nomeUsuario, 
                    a->nomeDestino, 
                    a->dataInicio);
-                
+                   
+            // Tratamento especial para o char de data final
             if (a->dataFim[0] == '$') {
                 printf("NULO, ");
             } else {
