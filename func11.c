@@ -65,16 +65,20 @@ void func11() {
         Vertice *v = &grafo->listaVertices[i];
         Aresta *a = v->inicioLista;
         
-        int imprimiuAlgum = 0;
+        int imprimiuAlgum = 0; // flag pra saber quando pular linha
         
         while (a != NULL) {
             // CORREÇÃO DO GRAU AMIZADE AQUI
-            printf("%s, %s, %s, %s, ", 
+            printf("%s, %s, %s, ", 
                    v->nomeUsuario, 
                    a->nomeDestino, 
-                   a->dataInicio, 
-                   (a->dataFim[0] == '$') ? "NULO" : a->dataFim);
-            
+                   a->dataInicio);
+                
+            if (a->dataFim[0] == '$') {
+                printf("NULO, ");
+            } else {
+                printf("%s, ", a->dataFim);
+            }   
             // Tratamento especial para o char do grauAmizade
             if (a->grauAmizade == '$') {
                 printf("NULO\n");
@@ -86,20 +90,8 @@ void func11() {
             imprimiuAlgum = 1;
         }
         
-        // Pular linha entre vértices se houve impressão (conforme gabarito)
+        // pular linha entre vértices se houve impressão (conforme gabarito do run codes)
         if (imprimiuAlgum) {
-            // Verifica se não é o último vértice para não deixar linha extra no final do arquivo?
-            // O run.codes geralmente ignora whitespace final, mas o padrão é pular entre blocos.
-            // Pelo seu gabarito, parece haver linhas em branco entre blocos de usuários diferentes.
-             // printf("\n"); // Removido ou mantido dependendo do teste exato. 
-             // Pelo texto "pule uma linha quando for exibir o PRÓXIMO", vamos colocar a quebra antes do próximo loop?
-             // Não, o padrão mais seguro é imprimir \n após o bloco se não for o último, mas vamos testar sem primeiro, 
-             // pois o seu print "Saída do nosso programa" no prompt não tinha linhas extras explicitas no texto colado, mas o gabarito tinha.
-             // Vou colocar condicional: Se imprimiu algo para este vértice, printa \n
-             // ATENÇÃO: O gabarito mostra uma linha em branco separando blocos.
-             // ACONCEICAO...
-             // <linha em branco>
-             // ALANAVIEIRA.../* integrantes: Bruno Baremaker Moraes (15443854) */
              printf("\n");
         }
     }
