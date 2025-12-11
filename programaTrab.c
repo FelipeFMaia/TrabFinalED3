@@ -50,15 +50,19 @@ void main() {
         case 10:
             func10();
             break;
+
         case 11:
             func11();
             break;
+
         case 12:
             func12();
             break;
+
         case 13:
             func13();
             break;
+            
         case 14:
             func14();
             break;
