@@ -56,6 +56,12 @@ void main() {
         case 12:
             func12();
             break;
+        case 13:
+            func13();
+            break;
+        case 14:
+            func14();
+            break;
     }
     return;         //termina o programa
 }
