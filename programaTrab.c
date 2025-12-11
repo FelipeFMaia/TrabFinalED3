@@ -1,5 +1,5 @@
-/* integrantes: Felipe Freitas Maia (15451360)*/
 /* integrantes: Bruno Baremaker Moraes (15443854) */
+/* integrantes: Felipe Freitas Maia (15451360)*/
 
 #include <stdio.h>
 #include "func.h"
