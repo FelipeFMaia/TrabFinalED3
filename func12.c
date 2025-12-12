@@ -29,7 +29,7 @@ void func12() {
         fclose(fpPessoa);
         return; // aborta funcionalidade
     }
-    fclose(fpIndice); 
+     
 
     if (verificaArquivo(fpSegue) == 0) {
         fclose(fpPessoa);
@@ -52,7 +52,7 @@ void func12() {
     lerCabecalhoSegue(fpSegue, &headerSegue);
     if (headerSegue.status == '0') {    //caso o arquivo segue esteja inconsistente, aborta funcionalidade
          printf("Falha na execução da funcionalidade.\n");
-         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); return;
+         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
     // Carregar arestas com MODO TRANSPOSTO = 1

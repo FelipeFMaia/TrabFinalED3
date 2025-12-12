@@ -29,7 +29,7 @@ void func11() {
         fclose(fpPessoa);
         return; // aborta funcionalidade
     }
-    fclose(fpIndice); 
+    
 
     if (verificaArquivo(fpSegue) == 0) {
         fclose(fpPessoa);

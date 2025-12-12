@@ -21,63 +21,76 @@ void func13() {
     scanf(" %s %s %s", nameFilePessoa, nameFileIndice, nameFileSegue);
     scan_quote_string(nomeCelebridade); // Ler nome da celebridade com aspas
 
+    // tenta abrir os arquivos de parametro binarios para leitura
     FILE *fpPessoa = fopen(nameFilePessoa, "rb");
     FILE *fpSegue = fopen(nameFileSegue, "rb");
+    FILE *fpIndice = fopen(nameFileIndice, "rb");
     
-    // Verificações padrão de existência
-    if (verificaArquivo(fpPessoa) == 0) return;
-    FILE *fpIndice = fopen(nameFileIndice, "rb"); // Só pra verificar
-    if (verificaArquivo(fpIndice) == 0) { fclose(fpPessoa); return; }
-    fclose(fpIndice);
-    if (verificaArquivo(fpSegue) == 0) { fclose(fpPessoa); return; }
+    // Verificação de segurança
+    if (verificaArquivo(fpPessoa) == 0){
+        return; // aborta funcionalidade
+    }
+    
+    if (verificaArquivo(fpIndice) == 0) {
+        fclose(fpPessoa);
+        return; // aborta funcionalidade
+    }
+    
+
+    if (verificaArquivo(fpSegue) == 0) {
+        fclose(fpPessoa);
+        fclose(fpIndice);
+        return; // aborta funcionalidade
+    }
 
     CabecalhoPessoa headerPessoa;
     lerCabecalhoPessoa(fpPessoa, &headerPessoa);
-    if (headerPessoa.status == '0') {
+    if (headerPessoa.status == '0') {   //caso o arquivo pessoa esteja inconsistente, aborta funcionalidade
          printf("Falha na execução da funcionalidade.\n");
-         fclose(fpPessoa); fclose(fpSegue); return;
+         fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // Criar grafo
+    // criar grafo
     Grafo *grafo = criarGrafo(headerPessoa.qtdPessoas);
-    carregarVerticesDoArquivo(fpPessoa, grafo);
+
+    carregarVerticesDoArquivo(fpPessoa, grafo); // vertices são as pessoas do arquivo pessoas
 
     CabecalhoSegue headerSegue;
     lerCabecalhoSegue(fpSegue, &headerSegue);
-    if (headerSegue.status == '0') {
+    if (headerSegue.status == '0') {    //caso o arquivo segue esteja inconsistente, aborta funcionalidade
          printf("Falha na execução da funcionalidade.\n");
-         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); return;
+         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // Carregar arestas no modo TRANSPOSTO (1)
-    // Isso é crucial: BFS saindo do destino no grafo transposto encontra todos as origens
+    // carregar arestas no modo TRANSPOSTO (1)
+    // BFS saindo do destino no grafo transposto encontra todos as origens
     carregarArestasDoArquivo(fpSegue, grafo, 1);
 
     // Encontrar índice da celebridade
-    int indiceCeleb = -1;
+    int indiceCeleb = -1; //flag pra encontrar o indice
     for (int i = 0; i < grafo->numVertices; i++) {
         if (strcmp(grafo->listaVertices[i].nomeUsuario, nomeCelebridade) == 0) {
-            indiceCeleb = i;
+            indiceCeleb = i; //salva o indice
             break;
         }
     }
 
     if (indiceCeleb == -1) {
-        printf("Celebridade inexistente.\n"); // Caso raro, mas seguro tratar
-        liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); return;
+        printf("Celebridade inexistente.\n"); // tratamento pra caso tenha alguma falha
+        liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // --- BFS ---
-    int *pai = (int*)malloc(grafo->numVertices * sizeof(int));
-    int *visitado = (int*)malloc(grafo->numVertices * sizeof(int));
-    for(int i=0; i<grafo->numVertices; i++) {
+    // BFS
+    int *pai = (int*)malloc(grafo->numVertices * sizeof(int)); // vetor com alocação dinâmica com elementos inteiros em qtd de vértices
+    int *visitado = (int*)malloc(grafo->numVertices * sizeof(int)); // outro vetor com alocação dinâmica com elementos inteiros em qtd de vértices
+    for(int i=0; i<grafo->numVertices; i++) {   // inicializa o  vetor dinâmico com -1 (pai) e 0 (visitado)
         pai[i] = -1;
         visitado[i] = 0;
     }
 
-    Fila *fila = criarFila(grafo->numVertices);
-    enfileirar(fila, indiceCeleb);
-    visitado[indiceCeleb] = 1;
+    Fila *fila = criarFila(grafo->numVertices); //cria fila do tamanho de vertices do grafo
+    enfileirar(fila, indiceCeleb);  // add item: indiceCeleb
+    visitado[indiceCeleb] = 1;      
     pai[indiceCeleb] = indiceCeleb; // Pai dele mesmo pra marcar raiz
 
     while(!filaVazia(fila)) {
@@ -86,13 +99,13 @@ void func13() {
         // Percorrer vizinhos (que estão ordenados alfabeticamente)
         Aresta *a = grafo->listaVertices[u].inicioLista;
         while(a != NULL) {
-            // Validar aresta: "pessoas que ainda seguem" -> dataFim deve ser NULO
+            // para validar as pessoas que ainda seguem, a data fim deve ser nulo --> $
             if (a->dataFim[0] == '$') { 
-                // Precisamos achar o índice do vizinho no vetor
-                // O vizinho 'a' tem o idDestino. Mas precisamos do índice dele no vetor.
-                // Como carregamos o grafo, podemos usar buscaBinariaPorIdNoGrafo (ou sequencial otimizada)
+                // precisamos achar o índice do vizinho no vetor
+                // o vizinho 'a' tem o idDestino. Mas precisamos do índice dele no vetor
+                // como carregamos o grafo, podemos usar buscaBinariaPorIdNoGrafo (ou sequencial otimizada)
                 
-                // Nota: No grafo transposto, 'a->idDestino' é a pessoa que segue 'u' (no original).
+                // no grafo transposto, 'a->idDestino' é a pessoa que segue 'u' (no original)
                 int v = buscaBinariaPorIdNoGrafo(grafo, a->idDestino);
                 
                 if (v != -1 && visitado[v] == 0) {
@@ -105,37 +118,45 @@ void func13() {
         }
     }
 
-    // --- Exibição ---
-    // Iterar sobre todas as pessoas (menos a celebridade)
+    // exibir todas as pessoas, menos a celebridade
     for (int i = 0; i < grafo->numVertices; i++) {
-        if (i == indiceCeleb) continue;
+        if (i == indiceCeleb) continue; // pula o indice da celebridade
 
         if (pai[i] == -1) {
-            // Não tem caminho
-            printf("NAO SEGUE A CELEBRIDADE\n"); // Conforme especificação/exemplo implícito
+            // não tem caminho
+            printf("NAO SEGUE A CELEBRIDADE\n");
         } else {
-            // Reconstruir caminho: i -> pai[i] -> pai[pai[i]] ... -> Celeb
+            // reconstruir caminho: i -> pai[i] -> pai[pai[i]] ... -> Celebridade
             int atual = i;
             while (atual != indiceCeleb) {
                 int proximo = pai[atual];
                 
-                // Precisamos recuperar os dados da aresta (atual -> proximo) NO GRAFO ORIGINAL.
-                // No grafo transposto, temos a aresta (proximo -> atual).
-                // Vamos procurar 'atual' na lista de adjacência de 'proximo'.
+                // precisamos recuperar os dados da aresta (atual -> proximo) no grafo original
+                // no grafo transposto, temos a aresta (proximo -> atual)
+                // vamos procurar o atual na lista de adjacência de proximo
                 
                 Aresta *arestaTransposta = grafo->listaVertices[proximo].inicioLista;
                 while (arestaTransposta != NULL) {
                     if (arestaTransposta->idDestino == grafo->listaVertices[atual].idPessoa) {
-                        // Achamos a aresta correspondente
-                         printf("%s, %s, %s, %s, ", 
+                        // achamos a aresta correspondente que queriamos
+
+                        printf("%s, %s, %s, ", 
                             grafo->listaVertices[atual].nomeUsuario, 
                             grafo->listaVertices[proximo].nomeUsuario, 
-                            arestaTransposta->dataInicio, 
-                            (arestaTransposta->dataFim[0] == '$') ? "NULO" : arestaTransposta->dataFim);
+                            arestaTransposta->dataInicio);
+                            
+                        if(arestaTransposta->dataFim[0] == '$'){
+                            printf("%s, ", "NULO");
+                        }else {
+                            printf("%s, ", arestaTransposta->dataFim);
+                        }
 
-                        if (arestaTransposta->grauAmizade == '$') printf("NULO\n");
-                        else printf("%c\n", arestaTransposta->grauAmizade);
-                        
+                        if (arestaTransposta->grauAmizade == '$'){
+                            printf("NULO\n");
+                        }else{
+                            printf("%c\n", arestaTransposta->grauAmizade);
+                        }
+
                         break;
                     }
                     arestaTransposta = arestaTransposta->prox;
@@ -154,4 +175,5 @@ void func13() {
     liberarGrafo(grafo);
     fclose(fpPessoa);
     fclose(fpSegue);
+    fclose(fpIndice);
 }
