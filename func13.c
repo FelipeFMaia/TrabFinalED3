@@ -7,10 +7,10 @@
 
 /**
  * Funcionalidade 13: Caminho mais curto (BFS no Grafo Transposto)
- * 1. Monta o Grafo Transposto (direções invertidas).
- * 2. Roda BFS saindo da Celebridade.
- * 3. A BFS preenche um vetor 'pai'. Se pai[u] existe, tem caminho de u para celebridade.
- * 4. Imprime os caminhos ativos (dataFim == NULO).
+ * 1. Monta o Grafo Transposto (direções invertidas)
+ * 2. Roda BFS saindo da Celebridade
+ * 3. A BFS preenche um vetor 'pai'. Se pai[u] existe, tem caminho de u para celebridade
+ * 4. Imprime os caminhos ativos (dataFim == NULO)
  */
 void func13() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
