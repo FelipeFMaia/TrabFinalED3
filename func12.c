@@ -6,7 +6,7 @@
 #include "grafos.h"
 
 /**
- * Funcionalidade 12: Grafo Transposto da funcionalidade 11
+ * Funcionalidade 12: grafo transposto da funcionalidade 11
  */
 void func12() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
@@ -20,7 +20,7 @@ void func12() {
     FILE *fpSegue = fopen(nameFileSegue, "rb");
     FILE *fpIndice = fopen(nameFileIndice, "rb");
     
-    // Verificação de segurança
+    // verificação de segurança
     if (verificaArquivo(fpPessoa) == 0){
         return; // aborta funcionalidade
     }
@@ -55,7 +55,7 @@ void func12() {
          liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // Carregar arestas com MODO TRANSPOSTO = 1
+    // carregar arestas com MODO TRANSPOSTO = 1
     carregarArestasDoArquivo(fpSegue, grafo, 1);    // arestas são as relações de quem segue quem
 
     // exibir o grafo transposto
@@ -72,13 +72,13 @@ void func12() {
                    a->nomeDestino, 
                    a->dataInicio);
                    
-            // Tratamento especial para o char de data final
+            // tratamento para o char de data final
             if (a->dataFim[0] == '$') {
                 printf("NULO, ");
             } else {
                 printf("%s, ", a->dataFim);
             }   
-            // Tratamento especial para o char do grauAmizade
+            // tratamento para o char do grauAmizade
             if (a->grauAmizade == '$') {
                 printf("NULO\n");
             } else {
@@ -89,6 +89,7 @@ void func12() {
             imprimiuAlgum = 1;
         }
         
+        // pular linha entre vértices se houve impressão
         if (imprimiuAlgum) {
              printf("\n");
         }
@@ -97,4 +98,5 @@ void func12() {
     liberarGrafo(grafo);
     fclose(fpPessoa);
     fclose(fpSegue);
+    fclose(fpIndice);
 }

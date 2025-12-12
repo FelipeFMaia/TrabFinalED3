@@ -6,11 +6,11 @@
 #include "grafos.h"
 
 /**
- * Funcionalidade 13: Caminho mais curto (BFS no Grafo Transposto)
- * 1. Monta o Grafo Transposto (direções invertidas)
- * 2. Roda BFS saindo da Celebridade
- * 3. A BFS preenche um vetor 'pai'. Se pai[u] existe, tem caminho de u para celebridade
- * 4. Imprime os caminhos ativos (dataFim == NULO)
+ * Funcionalidade 13: caminho mais curto --> BFS no grafo transposto
+ * 1. monta o grafo transposto (direções invertidas)
+ * 2. roda BFS saindo da celebridade
+ * 3. a BFS preenche um vetor pai. Se pai[u] existe --> tem caminho de u para celebridade
+ * 4. imprime os caminhos ativos, dataFim == NULO
  */
 void func13() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
@@ -26,7 +26,7 @@ void func13() {
     FILE *fpSegue = fopen(nameFileSegue, "rb");
     FILE *fpIndice = fopen(nameFileIndice, "rb");
     
-    // Verificação de segurança
+    // verificação de segurança
     if (verificaArquivo(fpPessoa) == 0){
         return; // aborta funcionalidade
     }
@@ -66,7 +66,7 @@ void func13() {
     // BFS saindo do destino no grafo transposto encontra todos as origens
     carregarArestasDoArquivo(fpSegue, grafo, 1);
 
-    // Encontrar índice da celebridade
+    // encontrar índice da celebridade
     int indiceCeleb = -1; //flag pra encontrar o indice
     for (int i = 0; i < grafo->numVertices; i++) {
         if (strcmp(grafo->listaVertices[i].nomeUsuario, nomeCelebridade) == 0) {
@@ -91,12 +91,12 @@ void func13() {
     Fila *fila = criarFila(grafo->numVertices); //cria fila do tamanho de vertices do grafo
     enfileirar(fila, indiceCeleb);  // add item: indiceCeleb
     visitado[indiceCeleb] = 1;      
-    pai[indiceCeleb] = indiceCeleb; // Pai dele mesmo pra marcar raiz
+    pai[indiceCeleb] = indiceCeleb; // pai dele mesmo --> marcar raiz
 
     while(!filaVazia(fila)) {
         int u = desenfileirar(fila);
         
-        // Percorrer vizinhos (que estão ordenados alfabeticamente)
+        // percorrer vizinhos que estão em ordem alfabetica
         Aresta *a = grafo->listaVertices[u].inicioLista;
         while(a != NULL) {
             // para validar as pessoas que ainda seguem, a data fim deve ser nulo --> $
@@ -110,7 +110,7 @@ void func13() {
                 
                 if (v != -1 && visitado[v] == 0) {
                     visitado[v] = 1;
-                    pai[v] = u; // O pai de v é u (quem descobriu v)
+                    pai[v] = u; // o pai de v é u (quem descobriu v)
                     enfileirar(fila, v);
                 }
             }

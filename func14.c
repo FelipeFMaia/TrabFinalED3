@@ -6,14 +6,11 @@
 #include "grafos.h"
 
 /**
- * Funcionalidade 14: determinar o comprimento do ciclo de fofoca
- * Objetivo: Verificar se existe um caminho que começa na pessoa X e volta para X
- * Retorno: Apenas o tamanho desse caminho , ou seja, menor caminho, pois usamos BFS ou mensagem de erro
- * Estratégia:
- * 1. Montamos o Grafo Normal (G)
- * 2. Identificamos o índice da pessoa X
- * 3. Iniciamos uma BFS inserindo os VIZINHOS de X na fila (distância 1)
- * 4. Se durante a BFS encontrarmos X novamente, achamos o ciclo
+ * Funcionalidade 14: determinar o comprimento do ciclo de fofoca --> Verificar se existe um caminho que começa na pessoa X e volta para X
+ * 1. montamos o grafo normal (G)
+ * 2. identificamos o índice da pessoa X
+ * 3. iniciamos uma BFS inserindo os vi\inhoa de X na fila --> distância 1
+ * 4. se durante a BFS encontrarmos X novamente, achamos o ciclo
  */
 void func14() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
@@ -21,7 +18,6 @@ void func14() {
     char nameFileSegue[MAX_STRING_TAMANHO];
     char nomeFofoqueiro[MAX_STRING_TAMANHO];
 
-    // Leitura dos parâmetros conforme especificado
     scanf(" %s %s %s", nameFilePessoa, nameFileIndice, nameFileSegue);
     scan_quote_string(nomeFofoqueiro); //ler nome do fofoqueiro com aspas
 
@@ -30,7 +26,7 @@ void func14() {
     FILE *fpSegue = fopen(nameFileSegue, "rb");
     FILE *fpIndice = fopen(nameFileIndice, "rb");
 
-    // Verificação de segurança
+    // verificação de segurança
     if (verificaArquivo(fpPessoa) == 0){
         return; // aborta funcionalidade
     }
@@ -88,12 +84,12 @@ void func14() {
     }
 
     if (indiceInicio == -1) {
-        // Se a pessoa não existe no grafo
+        // se a pessoa não existe no grafo
         printf("Registro inexistente.\n"); 
         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
     }
 
-    // --- Algoritmo de BFS para detecção de ciclo ---
+    // algoritmo de BFS para detecção de ciclo
     
     // quando o vetor de distâncias = -1 , significa que não foi visitado
     int *distancia = (int*)malloc(grafo->numVertices * sizeof(int)); // vetor dinâmico de inteiro com a qtd de vertices do grafo
@@ -111,7 +107,7 @@ void func14() {
     int tamanhoCiclo = 0;
 
     while(a != NULL) {
-        // Verifica se a aresta é válida (dataFim == NULO, ou seja, '$')
+        // verifica se a aresta é válida --> dataFim == NULO, ou seja $
         if (a->dataFim[0] == '$') {
             int v = buscaBinariaPorIdNoGrafo(grafo, a->idDestino);
             
@@ -151,7 +147,7 @@ void func14() {
                         if (w == indiceInicio) {
                             cicloEncontrado = 1;
                             tamanhoCiclo = distancia[u] + 1;
-                            break; // Sai do while interno
+                            break; // sai do while interno
                         }
                         
                         // se não é o inicio e não foi visitado --> continua a busca
