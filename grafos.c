@@ -3,6 +3,29 @@
 #include <string.h> 
 #include "grafos.h"
 
+// ----------------- Funções Auxiliares Locais -----------------
+
+// Função auxiliar para comparar datas (DD/MM/AAAA)
+// Retorna < 0 se dataA < dataB, 0 se igual, > 0 se dataA > dataB
+// Trata nulos ('$') conforme especificação: valor não nulo vem antes do nulo
+int compararDatasGrafos(const char *dataA, const char *dataB) {
+    // Trata os casos nulos (identificados por '$')
+    if (dataA[0] == '$') {  
+        if (dataB[0] == '$') return 0; // Ambos nulos
+        return 1; // A é nulo, B não (A > B, pois nulo fica no fim/depois)
+    }
+    if (dataB[0] == '$') return -1; // B é nulo, A não (A < B)
+
+    // Ambos não são nulos: comparar Ano (pos 6), Mês (pos 3), Dia (pos 0)
+    int cmp = strncmp(dataA + 6, dataB + 6, 4); // Ano
+    if (cmp != 0) return cmp;
+
+    cmp = strncmp(dataA + 3, dataB + 3, 2); // Mês
+    if (cmp != 0) return cmp;
+
+    return strncmp(dataA, dataB, 2); // Dia
+}
+
 // ----------------- Funções de Manipulação de Grafos -----------------
 
 // Cria a estrutura inicial do grafo alocando o vetor de vértices
@@ -52,17 +75,51 @@ int compararVerticesPorNomeUsuario(const void *a, const void *b) {
 }
 
 // Inserir aresta na lista encadeada mantendo a ordem alfabética do nomeDestino
+// Em caso de empate no nome, usa a dataInicio como critério de desempate
 void inserirArestaOrdenada(Aresta **cabeca, Aresta *novaAresta) {
     Aresta *atual;
+    
+    // Verifica se deve inserir na cabeça da lista
+    // Critério: Lista vazia OU Novo < Cabeça
+    // Novo < Cabeça se: (NomeNovo < NomeCabeca) OU (NomeNovo == NomeCabeca E DataNovo < DataCabeca)
+    int cmpNomeHead = 0;
+    int deveInserirNoInicio = 0;
 
-    // Caso 1: Inserção no início (lista vazia ou novo é menor que o primeiro)
-    if (*cabeca == NULL || strcmp((*cabeca)->nomeDestino, novaAresta->nomeDestino) >= 0) {
+    if (*cabeca == NULL) {
+        deveInserirNoInicio = 1;
+    } else {
+        cmpNomeHead = strcmp(novaAresta->nomeDestino, (*cabeca)->nomeDestino);
+        if (cmpNomeHead < 0) {
+            deveInserirNoInicio = 1;
+        } else if (cmpNomeHead == 0) {
+            // Empate no nome, verificar data
+            if (compararDatasGrafos(novaAresta->dataInicio, (*cabeca)->dataInicio) < 0) {
+                deveInserirNoInicio = 1;
+            }
+        }
+    }
+
+    if (deveInserirNoInicio) {
         novaAresta->prox = *cabeca;
         *cabeca = novaAresta;
     } else {
-        // Caso 2: Percorrer para achar a posição
+        // Percorrer para achar a posição
         atual = *cabeca;
-        while (atual->prox != NULL && strcmp(atual->prox->nomeDestino, novaAresta->nomeDestino) < 0) {
+        while (atual->prox != NULL) {
+            int cmpNomeProx = strcmp(atual->prox->nomeDestino, novaAresta->nomeDestino);
+            
+            // Se o próximo tem nome maior, paramos (o novo entra antes dele)
+            if (cmpNomeProx > 0) {
+                break;
+            }
+            // Se o próximo tem nome igual, verificamos a data
+            if (cmpNomeProx == 0) {
+                // Se a data do próximo for maior que a do novo, o novo entra antes dele
+                if (compararDatasGrafos(atual->prox->dataInicio, novaAresta->dataInicio) > 0) {
+                    break;
+                }
+            }
+            // Caso contrário (nome menor ou nome igual com data menor/igual), continuamos
             atual = atual->prox;
         }
         novaAresta->prox = atual->prox;
