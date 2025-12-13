@@ -6,11 +6,12 @@
 #include "grafos.h"
 
 /**
- * Funcionalidade 14: determinar o comprimento do ciclo de fofoca --> Verificar se existe um caminho que começa na pessoa X e volta para X
- * 1. montamos o grafo normal (G)
- * 2. identificamos o índice da pessoa X
- * 3. iniciamos uma BFS inserindo os vi\inhoa de X na fila --> distância 1
- * 4. se durante a BFS encontrarmos X novamente, achamos o ciclo
+ * Funcionalidade 14: Determinar o comprimento do ciclo de fofoca --> BFS para encontrar ciclo
+ * 1. Montar o grafo direcionado (quem segue quem)
+ * 2. Encontrar o índice da pessoa que iniciou a fofoca (Origem)
+ * 3. Iniciar BFS: Inserir todos os vizinhos diretos da Origem na fila com distância 1
+ * 4. Executar a BFS. Se encontrarmos a pessoa Origem novamente, o ciclo mais curto foi fechado
+ * 5. Imprimir o comprimento do caminho (distância acumulada)
  */
 void func14() {
     char nameFilePessoa[MAX_STRING_TAMANHO];
@@ -18,158 +19,170 @@ void func14() {
     char nameFileSegue[MAX_STRING_TAMANHO];
     char nomeFofoqueiro[MAX_STRING_TAMANHO];
 
+    // Pegar do terminal os nomes dos arquivos e nomeFofoqueiro
     scanf(" %s %s %s", nameFilePessoa, nameFileIndice, nameFileSegue);
-    scan_quote_string(nomeFofoqueiro); //ler nome do fofoqueiro com aspas
+    scan_quote_string(nomeFofoqueiro); // Ler nome da pessoa que gerou a fofoca com aspas
 
-    // tenta abrir os arquivos de parametro binarios para leitura
+    // Tentar abrir os arquivos binários para leitura, em modo de leitura binária
     FILE *fpPessoa = fopen(nameFilePessoa, "rb");
     FILE *fpSegue = fopen(nameFileSegue, "rb");
     FILE *fpIndice = fopen(nameFileIndice, "rb");
 
-    // verificação de segurança
+    // Verificação de segurança
     if (verificaArquivo(fpPessoa) == 0){
         return; // aborta funcionalidade
     }
-    
     if (verificaArquivo(fpIndice) == 0) {
         fclose(fpPessoa);
         return; // aborta funcionalidade
     }
-    
-
     if (verificaArquivo(fpSegue) == 0) {
         fclose(fpPessoa);
         fclose(fpIndice);
         return; // aborta funcionalidade
     }
 
-    // leitura do cabeçalho de Pessoa
+    // Ler cabeçalho do arquivo Pessoa e verificar a consistência
     CabecalhoPessoa headerPessoa;
     lerCabecalhoPessoa(fpPessoa, &headerPessoa);
-    if (headerPessoa.status == '0') {   //caso o arquivo pessoa esteja inconsistente, aborta funcionalidade
-         printf("Falha na execução da funcionalidade.\n");
-         fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
-    }
-
-    // criação do Grafo em Memória
-    Grafo *grafo = criarGrafo(headerPessoa.qtdPessoas);
-    if (grafo == NULL) {
+    if (verificaConsistenciaArquivo(fpPessoa, 2) == 0) {   // Caso o arquivo Pessoa esteja inconsistente, abortar funcionalidade
         printf("Falha na execução da funcionalidade.\n");
-        fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
+        fclose(fpPessoa);
+        fclose(fpSegue);
+        fclose(fpIndice);
+        return;
     }
 
-    // carregar Vértices
-    carregarVerticesDoArquivo(fpPessoa, grafo); // vertices são as pessoas do arquivo pessoas
+    // Criar grafo
+    Grafo *grafo = criarGrafo(headerPessoa.qtdPessoas);
 
-    // leitura do cabeçalho de Segue
+    // Carregar vértices do grafo
+    carregarVerticesDoArquivo(fpPessoa, grafo); // Vértices são as pessoas do arquivo pessoas
+
+    // Ler cabeçalho do arquivo Segue e verificar a consistência
     CabecalhoSegue headerSegue;
     lerCabecalhoSegue(fpSegue, &headerSegue);
-    if (headerSegue.status == '0') {    //caso o arquivo segue esteja inconsistente, aborta funcionalidade
-         printf("Falha na execução da funcionalidade.\n");
-         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); return;
+    if (verificaConsistenciaArquivo(fpSegue, 3) == 0) {    // Caso o arquivo Segue esteja inconsistente, abortar funcionalidade
+        printf("Falha na execução da funcionalidade.\n");
+        liberarGrafo(grafo);
+        fclose(fpPessoa);
+        fclose(fpSegue);
+        fclose(fpIndice);
+        return;
     }
 
-    // carregar Arestas no modo NORMAL (0), pois queremos saber quem segue quem
+    // Carregar arestas no modo NORMAL (parâmetro 0)
+    // Grafo direcionado: A -> B significa que A segue B (A conta fofoca para B)
     carregarArestasDoArquivo(fpSegue, grafo, 0);
 
-    // encontrar o índice da pessoa que gerou a fofoca no vetor de vértices
-    int indiceInicio = -1; // flag pra encontrar o fofoqueiro
-    
-    // busca linear
+    // Encontrar índice da pessoa fofoqueira (Origem)
+    int indiceFofoqueiro = -1; // flag pra encontrar o índice
     for (int i = 0; i < grafo->numVertices; i++) {
         if (strcmp(grafo->listaVertices[i].nomeUsuario, nomeFofoqueiro) == 0) {
-            indiceInicio = i; // salva indice do fofoqueiro
+            indiceFofoqueiro = i; // salva o indice
             break;
         }
     }
 
-    if (indiceInicio == -1) {
-        // se a pessoa não existe no grafo
-        printf("Registro inexistente.\n"); 
-        liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
+    // Se a pessoa não existe (indice==-1)
+    if (indiceFofoqueiro == -1) {
+        printf("Falha na execução da funcionalidade.\n");
+        // liberar memória e fechar arquivos
+        liberarGrafo(grafo);
+        fclose(fpPessoa);
+        fclose(fpSegue);
+        fclose(fpIndice);
+        return;
     }
 
-    // algoritmo de BFS para detecção de ciclo
-    
-    // quando o vetor de distâncias = -1 , significa que não foi visitado
-    int *distancia = (int*)malloc(grafo->numVertices * sizeof(int)); // vetor dinâmico de inteiro com a qtd de vertices do grafo
+    // ------------------- BFS (Breadth-First Search) para Ciclo -------------------
+
+    // Alocar vetor para armazenar distâncias
+    // Ele também serve como vetor de "visitados": se distancia[i] == -1, não foi visitado
+    int *distancia = (int*)malloc(grafo->numVertices * sizeof(int)); 
     for(int i = 0; i < grafo->numVertices; i++) {
-        distancia[i] = -1;  // inicializa o vetor distancia com tudo "nao visitado"
+        distancia[i] = -1;  // inicializar com -1 (não visitado)
     }
 
-    Fila *fila = criarFila(grafo->numVertices); // fila com qtd de vertices do grafo
+    // Criar fila com um tamanho seguro
+    Fila *fila = criarFila(grafo->numVertices);
 
-    // o indiceInicio na fila não tem distancia 0, mas colocamos seus vizinhos com distancia 1
-    // assim se encontrarmos o indiceInicio novamente, fechamos o ciclo
-    Aresta *a = grafo->listaVertices[indiceInicio].inicioLista;
-
-    int cicloEncontrado = 0;    // flag para encontro do ciclo
+    // Passo Diferenciado: Não colocamos o Fofoqueiro na fila com distância 0
+    // Colocamos os VIZINHOS do Fofoqueiro na fila com distância 1
+    // Motivo: Queremos encontrar quando a busca RETORNA ao Fofoqueiro
+    
+    Aresta *vizinhoInicial = grafo->listaVertices[indiceFofoqueiro].inicioLista;
+    int cicloEncontrado = 0;    // flag de sucesso
     int tamanhoCiclo = 0;
 
-    while(a != NULL) {
-        // verifica se a aresta é válida --> dataFim == NULO, ou seja $
-        if (a->dataFim[0] == '$') {
-            int v = buscaBinariaPorIdNoGrafo(grafo, a->idDestino);
+    while(vizinhoInicial != NULL) {
+        // Filtrar as pessoas que ainda seguem (dataFim == NULO/$)
+        if (vizinhoInicial->dataFim[0] == '$') {
+            int indiceVizinho = buscaIndicePorIdNoGrafo(grafo, vizinhoInicial->idDestino);
             
-            if (v != -1) {
-                // a pessoa segue ela mesma --> ciclo de tamanho 1
-                if (v == indiceInicio) {
+            if (indiceVizinho != -1) {
+                // Caso especial: Auto-loop (a pessoa segue ela mesma)
+                if (indiceVizinho == indiceFofoqueiro) {
                     cicloEncontrado = 1;
                     tamanhoCiclo = 1;
                     break;
                 }
 
-                // pode haver arestas duplicadas ou caminhos alternativos, só enfileiramos se distancia for -1 para garantir o menor caminho (BFS)
-                if (distancia[v] == -1) {
-                    distancia[v] = 1;
-                    enfileirar(fila, v);
+                // Se ainda não foi visitado, marca distância 1 e enfileira
+                if (distancia[indiceVizinho] == -1) {
+                    distancia[indiceVizinho] = 1;
+                    enfileirar(fila, indiceVizinho);
                 }
             }
         }
-        a = a->prox; // próximo vizinho (já em ordem alfabética)
+        // Ir para o próximo vizinho (respeitando ordem alfabética da inserção)
+        vizinhoInicial = vizinhoInicial->prox;
     }
 
-    // se não achou ciclo imediato de tamanho 1, roda a BFS
+    // Loop principal da BFS (se não achou auto-loop logo de cara)
     if (!cicloEncontrado) {
         while(!filaVazia(fila)) {
-            int u = desenfileirar(fila);
+            // Desenfileirar o nó atual
+            int noAtual = desenfileirar(fila);
             
-            // percorre os vizinhos de u
-            Aresta *vizinho = grafo->listaVertices[u].inicioLista;
+            // Percorrer os vizinhos do noAtual
+            Aresta *vizinho = grafo->listaVertices[noAtual].inicioLista;
             while(vizinho != NULL) {
                 
-                // só considera relacionamentos ativos
+                // Verificar se a relação ainda existe (ativo)
                 if (vizinho->dataFim[0] == '$') {
-                    int w = buscaBinariaPorIdNoGrafo(grafo, vizinho->idDestino);
+                    int indiceVizinho = buscaIndicePorIdNoGrafo(grafo, vizinho->idDestino);
                     
-                    if (w != -1) {
-                        // se o vizinho w for a pessoa inicial --> achamos o caminho de volta
-                        if (w == indiceInicio) {
+                    if (indiceVizinho != -1) {
+                        // VERIFICAÇÃO DO CICLO: Se o vizinho for o próprio Fofoqueiro
+                        if (indiceVizinho == indiceFofoqueiro) {
                             cicloEncontrado = 1;
-                            tamanhoCiclo = distancia[u] + 1;
-                            break; // sai do while interno
+                            tamanhoCiclo = distancia[noAtual] + 1; // Distância até atual + 1 salto para voltar à origem
+                            break; // Quebra o while interno
                         }
                         
-                        // se não é o inicio e não foi visitado --> continua a busca
-                        if (distancia[w] == -1) {
-                            distancia[w] = distancia[u] + 1;
-                            enfileirar(fila, w);
+                        // Se não é a origem e não foi visitado, continua a propagação
+                        if (distancia[indiceVizinho] == -1) {
+                            distancia[indiceVizinho] = distancia[noAtual] + 1;
+                            enfileirar(fila, indiceVizinho);
                         }
                     }
                 }
                 vizinho = vizinho->prox;
             }
-            if (cicloEncontrado) break; // sai do while da fila
+            if (cicloEncontrado) break; // Quebra o while da fila
         }
     }
 
+    // --------------------------- Resultado ---------------------------
+    
     if (cicloEncontrado) {
-        printf("%d\n", tamanhoCiclo);   // encontramos o ciclo
+        printf("%d\n", tamanhoCiclo);
     } else {
-        printf("A FOFOCA NAO RETORNOU\n");  // o while expirou sem que encontrassemos o ciclo
+        printf("A FOFOCA NAO RETORNOU\n");
     }
 
-    // liberação de memória
+    // Liberar memória e fechar arquivos
     liberarFila(fila);
     free(distancia);
     liberarGrafo(grafo);

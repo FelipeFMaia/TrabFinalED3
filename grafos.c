@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h> 
-#include <string.h>  
-#include <ctype.h>
+#include <string.h> 
 #include "grafos.h"
 
 // ----------------- Funções de Manipulação de Grafos -----------------
@@ -71,31 +70,30 @@ void inserirArestaOrdenada(Aresta **cabeca, Aresta *novaAresta) {
     }
 }
 
-// Busca Sequencial para achar o ÍNDICE no vetor do grafo dado um idPessoa.
-// (O arquivo segue tem IDs, mas nosso vetor está ordenado por NOME, então não dá pra fazer busca binária simples por ID no vetor principal)
-int buscaBinariaPorIdNoGrafo(Grafo *grafo, int idProcurado) {
-    // Nota: Como o grafo não está ordenado por ID, a busca é sequencial O(N).
-    // Para datasets muito grandes, criaríamos um índice auxiliar, mas para este trabalho isso é suficiente.
+// Busca Sequencial para achar o índice no vetor do grafo dado um idPessoa
+int buscaIndicePorIdNoGrafo(Grafo *grafo, int idProcurado) {
+    // Loop para a busca
     for(int i = 0; i < grafo->numVertices; i++) {
         if (grafo->listaVertices[i].idPessoa == idProcurado) {
             return i;
         }
     }
+    // Se não encontrado, retornar -1
     return -1; 
 }
 
 // Carrega vértices e ordena por nomeUsuario
 void carregarVerticesDoArquivo(FILE *fpPessoa, Grafo *grafo) {
-    RegistroPessoa reg;
+    RegistroPessoa registro;
     int i = 0;
-    
+    // pular cabeçalho
     fseek(fpPessoa, TAMANHO_CABECALHO_PESSOA, SEEK_SET);
-
-    while (lerRegistroPessoa(fpPessoa, &reg) != 0) {
-        if (reg.removido == '0') {
-            grafo->listaVertices[i].idPessoa = reg.idPessoa;
-            strcpy(grafo->listaVertices[i].nomePessoa, reg.nomePessoa);
-            strcpy(grafo->listaVertices[i].nomeUsuario, reg.nomeUsuario);
+    // loop para ler registro do arquivo Pessoa e salvar num vértice do grafo 
+    while (lerRegistroPessoa(fpPessoa, &registro) != 0) {
+        if (registro.removido == '0') {
+            grafo->listaVertices[i].idPessoa = registro.idPessoa;
+            strcpy(grafo->listaVertices[i].nomePessoa, registro.nomePessoa);
+            strcpy(grafo->listaVertices[i].nomeUsuario, registro.nomeUsuario);
             grafo->listaVertices[i].inicioLista = NULL;
             i++;
         }
@@ -104,55 +102,56 @@ void carregarVerticesDoArquivo(FILE *fpPessoa, Grafo *grafo) {
     // Atualiza número real de vértices (caso haja removidos que não entraram)
     grafo->numVertices = i;
 
-    // Ordenação fundamental para a saída correta
+    // Ordenação pelo nomeUsuario
     qsort(grafo->listaVertices, grafo->numVertices, sizeof(Vertice), compararVerticesPorNomeUsuario);
 }
 
-// Carrega arestas. Se modoTransposto == 1, inverte origem e destino.
+// Carrega as arestas do arquivo segue.bin para o Grafo
+// Se modoTransposto==1, inverte origem e destino
 void carregarArestasDoArquivo(FILE *fpSegue, Grafo *grafo, int modoTransposto) {
     RegistroSegue reg;
-    fseek(fpSegue, TAMANHO_CABECALHO_SEGUE, SEEK_SET);
+    CabecalhoSegue header;
 
-    // Como o arquivo segueOrdenado tem registros de tamanho fixo, podemos usar fread direto
-    // Mas precisamos pular os bytes se ele estiver removido.
-    // Sua função lerRegistroSegue já lê tudo. Vamos usá-la.
-    
-    // Nota: lerRegistroSegue lê removido + dados.
-    while (fread(&reg.removido, sizeof(char), 1, fpSegue) == 1) {
-        fread(&reg.idPessoaQueSegue, sizeof(int), 1, fpSegue);
-        fread(&reg.idPessoaQueESeguida, sizeof(int), 1, fpSegue);
-        fread(reg.dataInicioQueSegue, sizeof(char), 10, fpSegue);
-        fread(reg.dataFimQueSegue, sizeof(char), 10, fpSegue);
-        fread(&reg.grauAmizade, sizeof(char), 1, fpSegue);
+    // Ler cabeçalho para obter quantidade de registros
+    fseek(fpSegue, 0, SEEK_SET);
+    lerCabecalhoSegue(fpSegue, &header);
 
-        if (reg.removido == '1') continue;
+    // Loop para ler a quantidade de registros
+    for (int i = 0; i < header.quantidadePessoas; i++) {
+        lerRegistroSegue(fpSegue, &reg);
 
+        // Se removido, pular
+        if (reg.removido == '1') {
+            continue;
+        }
+        
         int idOrigem, idDestino;
 
+        // Definir origem e destino conforme o modo (Normal ou Transposto)
         if (modoTransposto == 0) {
             idOrigem = reg.idPessoaQueSegue;
             idDestino = reg.idPessoaQueESeguida;
         } else {
-            // Inversão para a Funcionalidade 12
-            idOrigem = reg.idPessoaQueESeguida; 
+            idOrigem = reg.idPessoaQueESeguida;
             idDestino = reg.idPessoaQueSegue;
         }
 
-        // Achar índices no vetor (mapeamento ID -> Índice)
-        int indexOrigem = buscaBinariaPorIdNoGrafo(grafo, idOrigem);
-        int indexDestino = buscaBinariaPorIdNoGrafo(grafo, idDestino);
+        // Buscar indices no grafo
+        int indexOrigem = buscaIndicePorIdNoGrafo(grafo, idOrigem);
+        int indexDestino = buscaIndicePorIdNoGrafo(grafo, idDestino);
 
+        // Se ambos existirem, adicionar aresta
         if (indexOrigem != -1 && indexDestino != -1) {
             Aresta *nova = (Aresta*)malloc(sizeof(Aresta));
             nova->idDestino = idDestino;
-            // Copia o nome do destino para a aresta (facilita o print e ordenação da lista)
             strcpy(nova->nomeDestino, grafo->listaVertices[indexDestino].nomeUsuario);
-            
             nova->grauAmizade = reg.grauAmizade;
             
-            // Tratamento de strings de data
-            strncpy(nova->dataInicio, reg.dataInicioQueSegue, 10); nova->dataInicio[10] = '\0';
-            strncpy(nova->dataFim, reg.dataFimQueSegue, 10); nova->dataFim[10] = '\0';
+            strncpy(nova->dataInicio, reg.dataInicioQueSegue, 10);
+            nova->dataInicio[10] = '\0';
+            
+            strncpy(nova->dataFim, reg.dataFimQueSegue, 10);
+            nova->dataFim[10] = '\0';
             
             inserirArestaOrdenada(&(grafo->listaVertices[indexOrigem].inicioLista), nova);
         }
@@ -186,7 +185,11 @@ void enfileirar(Fila *f, int item) {
 }
 
 int desenfileirar(Fila *f) {
-    if (f->tamanho == 0) return -1;
+    // Se a fila estiver vazia
+    if (f->tamanho == 0) {
+        return -1;
+    }
+    // Se a fila não estiver vazia, tirar o primeio da fila (desenfileirar)
     int item = f->itens[f->inicio];
     f->inicio = (f->inicio + 1) % f->capacidade;
     f->tamanho--;

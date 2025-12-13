@@ -24,13 +24,14 @@ typedef struct {
     Aresta *inicioLista;                    // Cabeça da lista de adjacências
 } Vertice;
 
-// O Grafo em si
+// Struct do grafo
 typedef struct {
     Vertice *listaVertices;     // Vetor dinâmico de vértices
     int numVertices;            // Quantidade total de pessoas (vértices)
 } Grafo;
 
 // ----------------- Estrutura para Fila (BFS) -----------------
+
 typedef struct {
     int *itens;
     int inicio, fim;
@@ -38,13 +39,13 @@ typedef struct {
     int tamanho;
 } Fila;
 
-// ----------------- Funções Auxiliares de Grafos -----------------
 
+// ----------------- Funções Auxiliares de Grafos -----------------
 
 Grafo* criarGrafo(int numVertices);
 void liberarGrafo(Grafo *grafo);
 void adicionarAresta(Grafo *grafo, int indiceOrigem, int idDestino, char *nomeDestino, char *grau, char *dtInicio, char *dtFim);
-int buscaBinariaPorIdNoGrafo(Grafo *grafo, int idProcurado);
+int buscaIndicePorIdNoGrafo(Grafo *grafo, int idProcurado);
 int compararVerticesPorNomeUsuario(const void *a, const void *b);
 void carregarVerticesDoArquivo(FILE *fpPessoa, Grafo *grafo);
 void carregarArestasDoArquivo(FILE *fpSegue, Grafo *grafo, int modoTransposto);

@@ -13,58 +13,68 @@ void func12() {
     char nameFileIndice[MAX_STRING_TAMANHO];
     char nameFileSegue[MAX_STRING_TAMANHO];
 
+    // Pegar do terminal os nomes dos arquivos
     scanf(" %s %s %s", nameFilePessoa, nameFileIndice, nameFileSegue);
 
-    // tenta abrir os arquivos de parametro binarios para leitura
+    // Tentar abrir os arquivos binários para leitura, em modo de leitura binária
     FILE *fpPessoa = fopen(nameFilePessoa, "rb");
     FILE *fpSegue = fopen(nameFileSegue, "rb");
     FILE *fpIndice = fopen(nameFileIndice, "rb");
     
-    // verificação de segurança
+    // Verificação de segurança
     if (verificaArquivo(fpPessoa) == 0){
         return; // aborta funcionalidade
     }
-    
     if (verificaArquivo(fpIndice) == 0) {
         fclose(fpPessoa);
         return; // aborta funcionalidade
     }
-     
-
     if (verificaArquivo(fpSegue) == 0) {
         fclose(fpPessoa);
         fclose(fpIndice);
         return; // aborta funcionalidade
     }
 
+    // Ler cabeçalho do arquivo Pessoa e verificar a consistência  
     CabecalhoPessoa headerPessoa;
     lerCabecalhoPessoa(fpPessoa, &headerPessoa);
-    if (headerPessoa.status == '0') {   //caso o arquivo pessoa esteja inconsistente, aborta funcionalidade
-         printf("Falha na execução da funcionalidade.\n");
-         fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
+    if (verificaConsistenciaArquivo(fpPessoa, 2) == 0) {   // Caso o arquivo Pessoa esteja inconsistente, abortar funcionalidade
+        printf("Falha na execução da funcionalidade.\n");
+        fclose(fpPessoa);
+        fclose(fpSegue);
+        fclose(fpIndice);
+        return;
     }
 
+    // Criar o grafo
     Grafo *grafo = criarGrafo(headerPessoa.qtdPessoas);
     
-    carregarVerticesDoArquivo(fpPessoa, grafo); // vertices são as pessoas do arquivo pessoas
+    // Carregar vértices do grafo
+    carregarVerticesDoArquivo(fpPessoa, grafo); // Vértices são as pessoas do arquivo pessoas
 
+    // Ler cabeçalho do arquivo Segue e verificar a consistência
     CabecalhoSegue headerSegue;
     lerCabecalhoSegue(fpSegue, &headerSegue);
-    if (headerSegue.status == '0') {    //caso o arquivo segue esteja inconsistente, aborta funcionalidade
-         printf("Falha na execução da funcionalidade.\n");
-         liberarGrafo(grafo); fclose(fpPessoa); fclose(fpSegue); fclose(fpIndice); return;
+    if (verificaConsistenciaArquivo(fpSegue, 3) == 0) {    // Caso o arquivo Segue esteja inconsistente, abortar funcionalidade
+        printf("Falha na execução da funcionalidade.\n");
+        liberarGrafo(grafo);
+        fclose(fpPessoa);
+        fclose(fpSegue);
+        fclose(fpIndice);
+        return;
     }
 
-    // carregar arestas com MODO TRANSPOSTO = 1
-    carregarArestasDoArquivo(fpSegue, grafo, 1);    // arestas são as relações de quem segue quem
+    // Carregar arestas no modo TRANSPOSTO (parâmetro 1 na função abaixo)
+    carregarArestasDoArquivo(fpSegue, grafo, 1);    // Arestas são as relações de quem segue quem
 
-    // exibir o grafo transposto
+    // Exibir o grafo transposto
     for (int i = 0; i < grafo->numVertices; i++) {
         Vertice *v = &grafo->listaVertices[i];
         Aresta *a = v->inicioLista;
         
         int imprimiuAlgum = 0;  // flag pra saber quando pular linha
         
+        // percorre a lista de adjacência do vértice e imprime cada aresta (origem, destino, datas e grau)
         while (a != NULL) {
             
             printf("%s, %s, %s, ", 
@@ -95,6 +105,7 @@ void func12() {
         }
     }
 
+    // Liberar memória e fechar arquivos
     liberarGrafo(grafo);
     fclose(fpPessoa);
     fclose(fpSegue);
