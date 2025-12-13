@@ -3,7 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "utilidades.h"
+#include "geral.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "indice.h"
+#include "segue.h"
+
+
 // ----------------- Estruturas para o Grafo -----------------
 
 // Nó da lista encadeada de arestas (quem a pessoa segue)

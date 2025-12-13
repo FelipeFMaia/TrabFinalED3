@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utilidades.h"
 #include "func.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "indice.h"
+#include "segue.h"
 
 /**
  * Funcionalidade 10: junção entre pessoa.bin e segueOrdenado.bin

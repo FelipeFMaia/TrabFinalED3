@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utilidades.h"
 #include "func.h"
+#include "geral.h"
+#include "segue.h"
 
 /*
 Funcionalidade 9
@@ -17,7 +18,7 @@ int compareInts(int a, int b) {
     if (a == -1) {          // A é nulo
         if (b == -1) 
             return 0;       // A e B são nulos
-         else 
+        else 
             return 1;       // A é nulo e B não
     }
 

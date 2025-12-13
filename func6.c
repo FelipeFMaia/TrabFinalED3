@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utilidades.h"
 #include "func.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "indice.h"
 
 
 // Lê o novo registro a ser inserido

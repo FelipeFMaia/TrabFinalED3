@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "func.h"
-#include "utilidades.h"
 #include "grafos.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "segue.h"
+
 
 /**
  * Funcionalidade 11: criação e exibição do grafo de quem segue quem

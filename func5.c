@@ -4,8 +4,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "utilidades.h"
 #include "func.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "indice.h"
 
 /**
  * Funcionalidade 5: buscas e remoção de registros

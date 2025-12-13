@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "func.h"
-#include "utilidades.h"
+#include "geral.h"
+#include "indice.h"
 
 void func1(){
         char nome_arq[50];

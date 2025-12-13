@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "func.h"
-#include "utilidades.h"
+#include "geral.h"
+#include "pessoa.h"
+#include "segue.h"
 #include "grafos.h"
 
 /**

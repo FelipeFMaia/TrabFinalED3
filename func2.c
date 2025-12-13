@@ -2,9 +2,9 @@
 #include <stdlib.h>     //para o uso do quicksort (qsort)
 #include <string.h>
 #include "func.h"
-#include "utilidades.h"
-
-
+#include "geral.h"
+#include "pessoa.h"
+#include "indice.h"
 
 void func2() {
     char nome_arqCSV[50], nome_arqIndice[50], nome_arqPessoa[50];

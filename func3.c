@@ -1,6 +1,8 @@
 #include "func.h"
-#include "utilidades.h"
 #include <stdio.h>
+#include "geral.h"
+#include "pessoa.h"
+
 
 /**
  * Funcionalidade 3: Recupera e exibe todos os registros de um arquivo de dados.

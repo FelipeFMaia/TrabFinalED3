@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "utilidades.h"
 #include "func.h"
+#include "geral.h"
+#include "segue.h"
 
 
 /*
